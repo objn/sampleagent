@@ -13,7 +13,7 @@ services:
       REDIS_URI: "redis://redis:6379/0"
       REDIS_URL: "redis://redis:6379/1"
       RAG_UPLOAD_DIR: "/data/uploads"
-      CACHEABLE_TOOLS: "${CACHEABLE_TOOLS:-search_uploaded_knowledge}"
+      CACHEABLE_TOOLS: "${CACHEABLE_TOOLS-search_uploaded_knowledge}"
       LANGGRAPH_CLOUD_LICENSE_KEY: "${LANGGRAPH_CLOUD_LICENSE_KEY:-}"
       LANGSMITH_TRACING: "false"
     depends_on:

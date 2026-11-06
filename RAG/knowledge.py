@@ -12,8 +12,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 
 from Models.postgresql import existing_document, save_document, search_chunks
-from Models.redis import invalidate_tool_results
 from RAG.categories import normalize_category
+from Tools.cache import invalidate_tool_results
 
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024

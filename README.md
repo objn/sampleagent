@@ -26,6 +26,13 @@ The Agent Server is at `http://127.0.0.1:2025` (or your `APP_PORT`).
 API documentation is at `/docs`. Docker Compose starts the app, RAG worker,
 PostgreSQL with pgvector, and Redis. To stop them, run `docker compose down`.
 
+Tool results in Redis expire after 5 minutes. `CACHEABLE_TOOLS` in `.env`
+selects which tools use the cache. The default is `search_uploaded_knowledge`;
+use `search_uploaded_knowledge,check_customer_history` for both, or leave the
+value empty to disable caching. Indexing a new document clears cached knowledge
+searches. Customer history cache entries are scoped to the customer, session,
+and incoming message ID.
+
 ## Manual setup
 
 Requires Python 3.12, `uv`, PostgreSQL with
@@ -72,8 +79,9 @@ uv run --env-file .env python -m RAG.worker
 ```
 
 The server and worker use the same local `uploads/` directory. Redis is
-optional for manual development; set `REDIS_URL` in `.env` only if you run
-Redis for tool-result caching.
+optional for manual development. To enable the 5-minute tool cache, run Redis
+and set `REDIS_URL=redis://127.0.0.1:6379/1` in `.env`. Set `CACHEABLE_TOOLS`
+to a comma-separated list of tools to cache; leave it empty to cache none.
 
 ## Test in LangGraph Studio
 

@@ -14,10 +14,10 @@ from Agents.sample import (
     GuardrailResult,
     UrgencyResult,
     agent,
-    check_customer_history,
     decide_action,
     route_after_plan,
 )
+from Tools.customer_history import check_customer_history
 
 
 class FakeDecisionModel:
@@ -171,7 +171,7 @@ class TicketWorkflowTests(unittest.TestCase):
         }]
         with patch("Agents.sample._model", return_value=fake), \
              patch("Agents.sample.save_chat_message") as save, \
-             patch("Agents.sample.recent_customer_messages", return_value=earlier) as recent:
+             patch("Tools.customer_history.recent_customer_messages", return_value=earlier) as recent:
             result = agent.invoke({
                 "messages": [HumanMessage(content="Hello, I have a question")],
                 "user_id": "user-1", "session_id": "current-session",
@@ -196,7 +196,7 @@ class TicketWorkflowTests(unittest.TestCase):
         fake = FakeHistoryModel(relevant_ids=[2, 999])
         with patch("Agents.sample._model", return_value=fake), \
              patch("Agents.sample.save_chat_message"), \
-             patch("Agents.sample.recent_customer_messages", return_value=earlier):
+             patch("Tools.customer_history.recent_customer_messages", return_value=earlier):
             result = agent.invoke({
                 "messages": [
                     HumanMessage(content="Earlier question about a refund", id="msg-1"),
@@ -215,7 +215,7 @@ class TicketWorkflowTests(unittest.TestCase):
         fake = FakeHistoryModel(relevant_ids=[])
         with patch("Agents.sample._model", return_value=fake), \
              patch("Agents.sample.save_chat_message"), \
-             patch("Agents.sample.recent_customer_messages", return_value=[
+             patch("Tools.customer_history.recent_customer_messages", return_value=[
                  {"id": 1, "role": "user", "content": "Unrelated old billing case"}
              ]):
             result = agent.invoke({
@@ -327,7 +327,7 @@ class TicketWorkflowTests(unittest.TestCase):
             ],
             "user_id": "user-1", "session_id": "current-session",
         }
-        with patch("Agents.sample.recent_customer_messages", return_value=[{
+        with patch("Tools.customer_history.recent_customer_messages", return_value=[{
             "role": "user", "content": "Earlier billing issue",
         }]) as recent:
             result = graph.invoke(state)

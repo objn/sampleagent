@@ -2,25 +2,25 @@
 
 import json
 import os
-from typing import Annotated, Literal
+from typing import Literal
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import InjectedState, ToolNode
+from langgraph.prebuilt import ToolNode
 from pydantic import BaseModel, Field
 
-from Models.chat_history import recent_customer_messages, save_chat_message
+from Models.chat_history import save_chat_message
 from Prompts.classify import classify_prompt
 from Prompts.extract import extract_prompt
 from Prompts.guardrail import guardrail_prompt
 from Prompts.history import history_relevance_prompt
 from Prompts.plan import plan_prompt
 from Prompts.respond import decide_prompt, respond_prompt
-from RAG.knowledge import search_knowledge
+from Tools.customer_history import check_customer_history
+from Tools.knowledge_base import search_uploaded_knowledge
 
 
 class TicketState(MessagesState, total=False):
@@ -72,42 +72,6 @@ class HistoryRelevance(BaseModel):
 class GuardrailResult(BaseModel):
     category: Literal["safe", "prompt_injection", "nsfw"]
     language: Literal["th", "en"]
-
-
-@tool
-def search_uploaded_knowledge(query: str, category: str | None = None) -> str:
-    """Search uploaded support documents when a product answer or policy needs evidence."""
-    matches = search_knowledge(query, category=category)
-    if not matches:
-        return "No uploaded documents matched the question."
-    return "\n\n".join(
-        f"Source: {match['filename']} (category: {match['category']})"
-        + (f", page {match['page_number']}" if match["page_number"] else "")
-        + f"\n{match['content']}"
-        for match in matches
-    )
-
-
-@tool
-def check_customer_history(state: Annotated[dict, InjectedState]) -> str:
-    """Read the customer's last 10 earlier messages across sessions."""
-    user_id = state.get("user_id")
-    session_id = state.get("session_id")
-    if not user_id or not session_id:
-        return "Customer history is unavailable: user_id and session_id are required."
-    latest_user = next(
-        (m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)),
-        None,
-    )
-    history = recent_customer_messages(
-        user_id,
-        limit=10,
-        exclude_session_id=session_id if latest_user and latest_user.id else None,
-        exclude_message_id=latest_user.id if latest_user else None,
-    )
-    if not history:
-        return "No earlier customer chat messages were found."
-    return json.dumps(history, ensure_ascii=False)
 
 
 TOOLS = [search_uploaded_knowledge, check_customer_history]

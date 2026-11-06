@@ -25,4 +25,4 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["Agents*", "Api*", "Models*", "Prompts*", "RAG*"]
+include = ["Agents*", "Api*", "Models*", "Prompts*", "RAG*", "Tools*"]
