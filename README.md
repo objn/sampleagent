@@ -90,7 +90,10 @@ Start the manual development server with `uv run --env-file .env langgraph dev`,
 then open the Studio link printed in the terminal and select the `agent` graph.
 For Docker, open
 `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`
-(replace `2024` with your `APP_PORT` if needed) and select the `agent` graph.
+(replace `2024` with your `APP_PORT` if needed). If Studio shows
+**Configure connection**, enter the full URL `http://127.0.0.1:2024` in
+**Base URL**, leave **Custom Headers** empty, and click **Connect**. Include
+the `http://` prefix. Then select the `agent` graph.
 If Chrome asks for local network access for `smith.langchain.com`, allow it and
 reload Studio.
 In the graph input, send this JSON (use a new message ID for each test):
