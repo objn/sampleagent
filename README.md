@@ -104,33 +104,43 @@ go from `guardrail` to `reject_request` and end with `guardrail_rejected`.
 ## Call the Agent Server API directly
 
 Start either the Docker server (`http://127.0.0.1:2025`) or the manual
-development server (`http://127.0.0.1:2024`). From PowerShell, call the
-synchronous `POST /runs/wait` endpoint:
+development server (`http://127.0.0.1:2024`). Save this payload as
+`request.json` in the project directory:
 
-```powershell
-$base = "http://127.0.0.1:2025" # Change to port 2024 for langgraph dev
-$sessionId = [guid]::NewGuid().ToString()
-$body = @{
-    assistant_id = "agent"
-    input = @{
-        messages = @(@{
-            role = "user"
-            content = "My account login fails. Please help."
-            id = "message-$sessionId"
-        })
-        user_id = "customer-123"
-        session_id = $sessionId
+```json
+{
+  "assistant_id": "agent",
+  "input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "My account login fails. Please help.",
+        "id": "message-001"
+      }
+    ],
+    "user_id": "customer-123",
+    "session_id": "session-001"
+  },
+  "config": {
+    "configurable": {
+      "thread_id": "session-001"
     }
-    config = @{ configurable = @{ thread_id = $sessionId } }
-} | ConvertTo-Json -Depth 8
-
-$response = Invoke-RestMethod -Method Post -Uri "$base/runs/wait" `
-    -ContentType "application/json" -Body $body
-$response | Select-Object action, status, response_text
+  }
+}
 ```
 
+From PowerShell in that directory, call the synchronous API with `curl.exe`:
+
+```powershell
+curl.exe -X POST "http://127.0.0.1:2025/runs/wait" `
+  -H "Content-Type: application/json" `
+  --data-binary "@request.json"
+```
+
+Use port `2024` in the URL when testing with `langgraph dev`.
 `assistant_id` is `agent` because that is the graph name in `langgraph.json`.
 `/runs/wait` waits for the graph to finish and returns its final state. Use a
-stable `user_id` for the same customer and a new `session_id` and message `id`
-for each new test session. The input and agent reply are recorded in
-`chat_history`.
+stable `user_id` for the same customer. For each new test session, change
+`session_id`, `thread_id`, and the message `id` to new values. The response
+includes `action`, `status`, and `response_text`; the input and agent reply are
+recorded in `chat_history`.
