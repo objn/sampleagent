@@ -6,25 +6,26 @@ Requires Docker Desktop, an OpenAI API key, and a LangGraph license key.
 Run these commands in PowerShell:
 
 ```powershell
-git clone https://github.com/objn/simpleagent.git
-cd simpleagent
+git clone https://github.com/objn/sampleagent.git
+cd sampleagent
 Copy-Item .env.example .env
 ```
 
 Edit `.env` and set `OPENAI_API_KEY`, `POSTGRES_PASSWORD`, and
 `LANGGRAPH_CLOUD_LICENSE_KEY`. Use letters, digits, hyphens, or underscores
 for the PostgreSQL password because Docker Compose puts it in a database URL.
-`APP_PORT` defaults to `2025`; change it if that port is occupied.
+`APP_PORT` defaults to `2024`; change it if that port is occupied.
 
 ```powershell
 docker compose up --build -d
 docker compose ps
-curl.exe http://127.0.0.1:2025/ok
+curl.exe http://127.0.0.1:2024/ok
 ```
 
-The Agent Server is at `http://127.0.0.1:2025` (or your `APP_PORT`).
-API documentation is at `/docs`. Docker Compose starts the app, RAG worker,
-PostgreSQL with pgvector, and Redis. To stop them, run `docker compose down`.
+The Agent Server is at `http://127.0.0.1:2024` (or your `APP_PORT`).
+API documentation is at `/docs`. Docker Compose starts the app, Studio proxy,
+RAG worker, PostgreSQL with pgvector, and Redis. To stop them, run
+`docker compose down`.
 
 Tool results in Redis expire after 5 minutes. `CACHEABLE_TOOLS` in `.env`
 selects which tools use the cache. The default is `search_uploaded_knowledge`;
@@ -40,8 +41,8 @@ the pgvector extension installed, and an OpenAI API key. Run these commands
 in PowerShell:
 
 ```powershell
-git clone https://github.com/objn/simpleagent.git
-cd simpleagent
+git clone https://github.com/objn/sampleagent.git
+cd sampleagent
 Copy-Item .env.example .env
 psql -U postgres -d postgres
 ```
@@ -87,6 +88,11 @@ to a comma-separated list of tools to cache; leave it empty to cache none.
 
 Start the manual development server with `uv run --env-file .env langgraph dev`,
 then open the Studio link printed in the terminal and select the `agent` graph.
+For Docker, open
+`https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`
+(replace `2024` with your `APP_PORT` if needed) and select the `agent` graph.
+If Chrome asks for local network access for `smith.langchain.com`, allow it and
+reload Studio.
 In the graph input, send this JSON (use a new message ID for each test):
 
 ```json
@@ -111,8 +117,9 @@ go from `guardrail` to `reject_request` and end with `guardrail_rejected`.
 
 ## Call the Agent Server API directly
 
-Start either the Docker server (`http://127.0.0.1:2025`) or the manual
-development server (`http://127.0.0.1:2024`). Save this payload as
+Start either the Docker server or the manual development server at
+`http://127.0.0.1:2024`. They cannot both use that port at once; change
+`APP_PORT` for Docker if you need both running. Save this payload as
 `request.json` in the project directory:
 
 ```json
@@ -140,12 +147,12 @@ development server (`http://127.0.0.1:2024`). Save this payload as
 From PowerShell in that directory, call the synchronous API with `curl.exe`:
 
 ```powershell
-curl.exe -X POST "http://127.0.0.1:2025/runs/wait" `
+curl.exe -X POST "http://127.0.0.1:2024/runs/wait" `
   -H "Content-Type: application/json" `
   --data-binary "@request.json"
 ```
 
-Use port `2024` in the URL when testing with `langgraph dev`.
+Use your `APP_PORT` in the URL if Docker is on a different port.
 `assistant_id` is `agent` because that is the graph name in `langgraph.json`.
 `/runs/wait` waits for the graph to finish and returns its final state. Use a
 stable `user_id` for the same customer. For each new test session, change

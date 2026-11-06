@@ -9,7 +9,7 @@ ADD . /deps/sampleagent
 # -- Installing all local dependencies --
 RUN for dep in /deps/*; do             echo "Installing $dep";             if [ -d "$dep" ]; then                 echo "Installing $dep";                 (cd "$dep" && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir -c /api/constraints.txt -e .);             fi;         done
 # -- End of local dependencies install --
-ENV LANGGRAPH_HTTP='{"app": "/deps/sampleagent/Api/app.py:app"}'
+ENV LANGGRAPH_HTTP='{"app": "/deps/sampleagent/Api/app.py:app", "cors": {"allow_origins": ["https://smith.langchain.com"], "allow_methods": ["*"], "allow_headers": ["*"]}}'
 ENV LANGSERVE_GRAPHS='{"agent": "/deps/sampleagent/Agents/sample.py:agent"}'
 
 

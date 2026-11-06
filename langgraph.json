@@ -5,7 +5,12 @@
     "agent": "./Agents/sample.py:agent"
   },
   "http": {
-    "app": "./Api/app.py:app"
+    "app": "./Api/app.py:app",
+    "cors": {
+      "allow_origins": ["https://smith.langchain.com"],
+      "allow_methods": ["*"],
+      "allow_headers": ["*"]
+    }
   },
   "env": ".env"
 }
