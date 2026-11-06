@@ -20,6 +20,8 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+.langgraph_api/
+uploads/
 
 # Editor and OS files
 .idea/

@@ -1,0 +1,1 @@
+"""Reusable support ticket prompts."""
